@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кривое Зеркало</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Кривое Зеркало</h1>
+
+  <div class="controls">
+    <label>
+      Загрузить изображение:
+      <input type="file" id="imageLoader" accept="image/*" />
+    </label>
+
+    <label>
+      Режим искажения:
+      <select id="mode">
+        <option value="horizontal">Горизонтальное</option>
+        <option value="vertical">Вертикальное</option>
+        <option value="circular">Круговое от центра</option>
+        <option value="diagonal">Диагональное</option>
+        <option value="bulge">Круговая выпуклость</option>
+        <option value="stretch-h">Растяжение по горизонтали</option>
+        <option value="stretch-v">Растяжение по вертикали</option>
+      </select>
+    </label>
+
+    <label>
+      Амплитуда:
+      <input type="range" id="amplitude" min="-100" max="100" value="30" />
+      <input type="number" id="amplitudeNum" min="-100" max="100" value="30" />
+    </label>
+
+    <label>
+      Частота:
+      <input type="range" id="frequency" min="1" max="100" value="20" />
+      <input type="number" id="frequencyNum" min="1" max="100" value="20" />
+    </label>
+
+    <label>
+      Фаза:
+      <input type="range" id="phase" min="0" max="360" value="0" />
+      <input type="number" id="phaseNum" min="0" max="360" value="0" />
+    </label>
+
+    <button id="saveBtn">Сохранить результат</button>
+  </div>
+
+  <div class="canvas-wrapper">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
