@@ -13,14 +13,16 @@ const phaseNum = document.getElementById("phaseNum");
 
 let originalImage = null;
 
+// Синхронизация слайдеров и числовых полей
 function syncSliders(slider, number) {
-  slider.addEventListener("input", () => number.value = slider.value);
-  number.addEventListener("input", () => slider.value = number.value);
+  slider.addEventListener("input", () => (number.value = slider.value));
+  number.addEventListener("input", () => (slider.value = number.value));
 }
 syncSliders(ampSlider, ampNum);
 syncSliders(freqSlider, freqNum);
 syncSliders(phaseSlider, phaseNum);
 
+// Загрузка картинки
 imageLoader.addEventListener("change", handleImage, false);
 [modeSelect, ampSlider, freqSlider, phaseSlider, ampNum, freqNum, phaseNum].forEach(el =>
   el.addEventListener("input", applyEffect)
@@ -56,49 +58,62 @@ function applyEffect() {
   const dstImage = ctx.createImageData(w, h);
   const dst = dstImage.data;
 
+  // Ширина зоны затухания (процент от размера картинки)
+  const edgeFade = 0.13;
+
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
+
+      // Fade-коэффициенты для плавного исчезновения искажений к краю
+      let coefX = 1, coefY = 1;
+      if (x < w * edgeFade) coefX = x / (w * edgeFade);
+      else if (x > w * (1 - edgeFade)) coefX = (w - x) / (w * edgeFade);
+      if (y < h * edgeFade) coefY = y / (h * edgeFade);
+      else if (y > h * (1 - edgeFade)) coefY = (h - y) / (h * edgeFade);
+      let edgeCoef = Math.max(0, Math.min(coefX, coefY, 1));
+
       let offsetX = 0, offsetY = 0;
 
       switch (mode) {
         case "horizontal":
-          offsetX = amplitude * Math.sin((y / h) * frequency + phase);
+          offsetX = amplitude * edgeCoef * Math.sin((y / h) * frequency + phase);
           break;
         case "vertical":
-          offsetY = amplitude * Math.sin((x / w) * frequency + phase);
+          offsetY = amplitude * edgeCoef * Math.sin((x / w) * frequency + phase);
           break;
-        case "circular":
+        case "circular": {
           const dx = x - w / 2;
           const dy = y - h / 2;
           const distance = Math.sqrt(dx * dx + dy * dy);
           const angle = Math.atan2(dy, dx);
-          const distortion = amplitude * Math.sin(distance / frequency + phase);
+          const distortion = amplitude * edgeCoef * Math.sin(distance / frequency + phase);
           offsetX = distortion * Math.cos(angle);
           offsetY = distortion * Math.sin(angle);
           break;
+        }
         case "diagonal":
-          offsetX = amplitude * Math.sin((x + y) / frequency + phase);
-          offsetY = amplitude * Math.sin((x + y) / frequency + phase);
+          offsetX = amplitude * edgeCoef * Math.sin((x + y) / frequency + phase);
+          offsetY = amplitude * edgeCoef * Math.sin((x + y) / frequency + phase);
           break;
-        case "bulge":
+        case "bulge": {
           const cx = x - w / 2;
           const cy = y - h / 2;
           const r = Math.sqrt(cx * cx + cy * cy);
-          const bulgeAmount = amplitude * Math.sin(r / frequency + phase);
+          const bulgeAmount = amplitude * edgeCoef * Math.sin(r / frequency + phase);
           offsetX = (cx / (r || 1)) * bulgeAmount;
           offsetY = (cy / (r || 1)) * bulgeAmount;
           break;
+        }
         case "stretch-h":
-          offsetX = amplitude * Math.sin(x / frequency + phase);
+          offsetX = amplitude * edgeCoef * Math.sin(x / frequency + phase);
           break;
         case "stretch-v":
-          offsetY = amplitude * Math.sin(y / frequency + phase);
+          offsetY = amplitude * edgeCoef * Math.sin(y / frequency + phase);
           break;
       }
 
       const srcX = Math.round(x + offsetX);
       const srcY = Math.round(y + offsetY);
-
       const srcIdx = (srcY * w + srcX) * 4;
       const dstIdx = (y * w + x) * 4;
 
